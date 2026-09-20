@@ -121,12 +121,21 @@
             border: 4px solid rgba(0, 243, 255, 0.2);
             border-top-color: #00f3ff;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             animation: spin 0.8s linear infinite;
             display: inline-block;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .server-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .server-online { color: #10b981; }
+        .server-offline { color: #ef4444; }
+        .server-checking { color: #f59e0b; }
     </style>
 </head>
 <body>
@@ -162,7 +171,15 @@
                 🔐 خەزنەیا پریمیۆم - تەنێ ب <strong class="text-amber-400">کلیلا تایبەت</strong> ڤەدبیت
             </p>
 
-            <div class="mt-6 bg-gray-950/80 border border-amber-500/40 rounded-2xl p-4 text-center">
+            <!-- Server Status Indicator -->
+            <div class="flex justify-center mt-4">
+                <div id="serverStatusBadge" class="server-status text-xs lg:text-sm bg-gray-950/80 border border-gray-700 rounded-full px-4 py-2">
+                    <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                    <span class="text-gray-300">د پشکنینا سێرڤەری دا...</span>
+                </div>
+            </div>
+
+            <div class="mt-5 bg-gray-950/80 border border-amber-500/40 rounded-2xl p-4 text-center">
                 <div class="text-xs lg:text-sm text-amber-400 font-bold">🔥 ئۆفەرا تایبەت یا ئێرۆکە</div>
                 <div class="text-3xl lg:text-4xl font-black text-white font-mono mt-2 tracking-widest" id="countdownTimer">09:59:59</div>
             </div>
@@ -807,7 +824,10 @@
                 <div class="flex gap-3 flex-wrap">
                     <input type="text" id="searchKey" oninput="renderKeys()" placeholder="لێگەریان..."
                         class="bg-gray-950 border border-gray-700 text-white px-4 py-2.5 rounded-lg text-sm focus:outline-none focus:border-cyan-500">
-                    <button onclick="exportKeys()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2.5 rounded-lg text-sm font-bold">
+                    <button onclick="refreshFromServer()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2.5 rounded-lg text-sm font-bold">
+                        <i class="fa-solid fa-sync"></i> نویکرن
+                    </button>
+                    <button onclick="exportKeys()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold">
                         <i class="fa-solid fa-download"></i> Export
                     </button>
                     <button onclick="clearAllKeys()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2.5 rounded-lg text-sm font-bold">
@@ -983,15 +1003,16 @@
 </div>
 
 <script>
-/* =====================================================
-   ⚙️ CONFIG - ڕێکخستن
-   ===================================================== */
-const API_BASE = window.location.origin;
-const API_SECRET = "maxtube-api-2026-secret-X9K2M";
+/* ══════════════════════════════════════════════════════════════
+   ⚙️ CONFIG - ڕێکخستن (GRING! بگوهۆڕە بۆ URL یا Railway تە)
+   ══════════════════════════════════════════════════════════════ */
+const API_BASE = "https://YOUR-RAILWAY-URL.up.railway.app"; // 👈 لێرە بگوهۆڕە!
+const API_SECRET = "maxtube-api-2026-secret-X9K2M"; // 👈 هەمان وەک server.py
+const USE_SERVER = true; // ئەگەر server بەردەست نەبیت، false بکە
 
-/* =====================================================
+/* ══════════════════════════════════════════════════════════════
    🔐 LICENSE SYSTEM
-   ===================================================== */
+   ══════════════════════════════════════════════════════════════ */
 const SECRET_KEYS = [
     'MAXTUBE-PRO1-2026-VIP1',
     'MAXTUBE-PRO2-2026-VIP2',
@@ -1021,9 +1042,12 @@ function isValidLicenseLocal(key) {
 }
 
 async function activateLicenseServer(key) {
+    if (!USE_SERVER || !API_BASE || API_BASE.includes("YOUR-RAILWAY")) {
+        return { success: null, error: 'سێرڤەر نەهاتە ڕێکخستن' };
+    }
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
+        const timeout = setTimeout(() => controller.abort(), 8000);
         const res = await fetch(`${API_BASE}/api/activate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-API-Secret': API_SECRET },
@@ -1034,6 +1058,7 @@ async function activateLicenseServer(key) {
         if (!res.ok) return { success: false, error: 'سێرڤەر بەرسڤ نەدا' };
         return await res.json();
     } catch(e) {
+        console.warn('Server error:', e);
         return { success: null, error: 'سێرڤەر بەردەست نینە' };
     }
 }
@@ -1060,7 +1085,6 @@ async function activateLicense() {
 
     // ١) پشکنینا سێرڤەری
     const serverResult = await activateLicenseServer(key);
-
     // ٢) پشکنینا خۆماڵی (fallback)
     const localValid = isValidLicenseLocal(key);
 
@@ -1113,6 +1137,32 @@ function checkLicense() {
         setupWhatsAppLink();
         startCountdown();
         initGateParticles();
+        checkServerStatus();
+    }
+}
+
+async function checkServerStatus() {
+    const badge = document.getElementById('serverStatusBadge');
+    if (!badge) return;
+
+    if (!USE_SERVER || !API_BASE || API_BASE.includes("YOUR-RAILWAY")) {
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-400"></span><span class="text-yellow-300">⚠️ سێرڤەر نەهاتە ڕێکخستن</span>';
+        return;
+    }
+
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`${API_BASE}/api/health`, { signal: controller.signal });
+        clearTimeout(timeout);
+        const data = await res.json();
+        if (data.status === 'ok') {
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-emerald-300">✅ سێرڤەر ئۆنلاین</span>';
+        } else {
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-400"></span><span class="text-red-300">❌ سێرڤەر ئۆفلاین</span>';
+        }
+    } catch(e) {
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-400"></span><span class="text-red-300">❌ سێرڤەر ئۆفلاین</span>';
     }
 }
 
@@ -1169,10 +1219,11 @@ function initGateParticles() {
     })();
 }
 
-/* =====================================================
+/* ══════════════════════════════════════════════════════════════
    📤 TELEGRAM LOGGING
-   ===================================================== */
+   ══════════════════════════════════════════════════════════════ */
 async function sendLog(event, info = {}) {
+    if (!USE_SERVER || !API_BASE || API_BASE.includes("YOUR-RAILWAY")) return;
     try {
         await fetch(`${API_BASE}/api/log`, {
             method: 'POST',
@@ -1182,9 +1233,9 @@ async function sendLog(event, info = {}) {
     } catch(e) {}
 }
 
-/* =====================================================
-   🛡️ ADMIN DASHBOARD (LOCAL)
-   ===================================================== */
+/* ══════════════════════════════════════════════════════════════
+   🛡️ ADMIN DASHBOARD
+   ══════════════════════════════════════════════════════════════ */
 const DEFAULT_ADMIN_PASS = 'admin2026';
 let KEY_DATABASE = JSON.parse(localStorage.getItem('maxtube_keys_db') || '[]');
 
@@ -1205,6 +1256,7 @@ function adminLogin() {
         renderAdminStats();
         renderKeys();
         loadAdminSettings();
+        refreshFromServer();
         showToast('بەخێربێی ئەدمین! 🛡️', 'user-shield');
         sendLog('admin_login', { success: true });
     } else {
@@ -1371,7 +1423,7 @@ function renderKeys() {
                     <span class="text-xs ${s.text} ${s.bg} px-3 py-1.5 rounded border ${s.border} font-bold flex items-center gap-1.5">
                         <i class="fa-solid fa-${s.icon}"></i> ${s.label}
                     </span>
-                    <span class="text-xs text-gray-500">${k.days} ڕۆژ • ${k.createdDate}</span>
+                    <span class="text-xs text-gray-500">${k.days} ڕۆژ • ${k.createdDate || ''}</span>
                 </div>
                 <div class="flex items-center gap-1">
                     <button onclick="copyText('${k.key}')" class="text-gray-400 hover:text-cyan-400 p-2.5 transition" title="کۆپی">
@@ -1431,6 +1483,24 @@ function exportKeys() {
     showToast('Export تەمام بوو!', 'download');
 }
 
+async function refreshFromServer() {
+    if (!USE_SERVER || !API_BASE || API_BASE.includes("YOUR-RAILWAY")) {
+        showToast('سێرڤەر نەهاتە ڕێکخستن', 'exclamation');
+        return;
+    }
+    try {
+        const res = await fetch(`${API_BASE}/api/stats`, {
+            headers: { 'X-API-Secret': API_SECRET }
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`سێرڤەر: ${data.total} کلیل • ${data.activations} چالاککرن`, 'server');
+        }
+    } catch(e) {
+        showToast('نەتوانی ژ سێرڤەری بخوینی', 'exclamation');
+    }
+}
+
 function loadAdminSettings() {
     const wa = localStorage.getItem('maxtube_whatsapp') || '9647506045491';
     const el = document.getElementById('newWhatsapp');
@@ -1451,9 +1521,9 @@ function saveAdminSettings() {
     showToast('ڕێکخستن هاتنە پاراستن! ✅', 'check');
 }
 
-/* =====================================================
+/* ══════════════════════════════════════════════════════════════
    🎯 MAIN APP LOGIC
-   ===================================================== */
+   ══════════════════════════════════════════════════════════════ */
 const samplePresets = {
     'short': {
         url: 'https://www.youtube.com/shorts/dQw4w9WgXcQ',
@@ -1912,9 +1982,9 @@ function runSpeedTest() {
     }, 100);
 }
 
-/* =====================================================
+/* ══════════════════════════════════════════════════════════════
    🚀 INIT
-   ===================================================== */
+   ══════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
     const inp = document.getElementById('licenseKeyInput');
     if (inp) inp.addEventListener('keypress', e => { if (e.key === 'Enter') activateLicense(); });
@@ -1925,18 +1995,8 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAdminHash();
     window.addEventListener('hashchange', checkAdminHash);
 
-    // Log page load
     setTimeout(() => sendLog('page_load', { url: location.href, ref: document.referrer }), 500);
 });
-
-// Global click logger
-document.addEventListener('click', (e) => {
-    const btn = e.target.closest('button, a');
-    if (btn && appInitialized) {
-        const label = (btn.innerText || '').trim().substring(0, 40);
-        if (label && !btn.onclick) return;
-    }
-}, true);
 </script>
 </body>
 </html>
