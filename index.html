@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxTube Pro MAX - داونلۆدەرا هەری بەرزی ڤیدیۆیێن یوتیوبی</title>
+    <meta name="description" content="باشترین و خێراترین داونلۆدەرا ڤیدیۆیێن یوتیوب، Shorts، MP3، 4K ب کوالێتیا PRO MAX.">
+    <meta property="og:title" content="MaxTube Pro MAX - Kurdish YouTube Downloader">
+    <meta property="og:type" content="website">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50:'#fff1f2',100:'#ffe4e6',400:'#fb7185',500:'#f43f5e',600:'#e11d48',700:'#be123c',900:'#881337' },
+                        amberGold: '#f59e0b', cyberNeon: '#00f3ff', purpleGlow: '#a855f7',
+                        darkbg: '#04060A', cardbg: '#090E17'
+                    },
+                    fontFamily: { kurdish: ['Vazirmatn', 'Segoe UI', 'sans-serif'] },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 2.5s infinite alternate',
+                        'float': 'float 4s ease-in-out infinite',
+                        'shine': 'shine 4s linear infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 15px rgba(225, 29, 72, 0.3)' },
+                            '100%': { boxShadow: '0 0 45px rgba(0, 243, 255, 0.8)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        shine: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * { box-sizing: border-box; }
+        html { font-size: 16px; }
+        @media (min-width: 1024px) { html { font-size: 17px; } }
+        @media (min-width: 1440px) { html { font-size: 18px; } }
+        @media (min-width: 1920px) { html { font-size: 19px; } }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #04060A;
+            color: #F1F5F9;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        canvas#bgParticles, canvas#gateParticles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+        }
+        canvas#bgParticles { z-index: -1; }
+        canvas#gateParticles { z-index: 1; }
+
+        .glass-panel {
+            background: rgba(10, 16, 28, 0.88);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card {
+            background: rgba(18, 26, 43, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #00F3FF 0%, #FF2A6D 50%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glow-button {
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 55px rgba(0, 243, 255, 0.9);
+            transform: translateY(-3px) scale(1.02);
+        }
+        @keyframes shine {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+        .badge-glow { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #04060A; }
+        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00f3ff; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .shake { animation: shake 0.4s; }
+        .hidden { display: none !important; }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 243, 255, 0.2);
+            border-top-color: #00f3ff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<!-- ========================================================
+     🚪 LICENSE GATE
+     ======================================================== -->
+<div id="licenseGate" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto"
+     style="background: radial-gradient(circle at 50% 0%, #0a0f1e 0%, #04060A 70%);">
+    <canvas id="gateParticles" class="absolute inset-0 w-full h-full"></canvas>
+
+    <div class="relative w-full max-w-2xl my-8">
+        <div class="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-brand-600 to-amber-500 rounded-3xl blur-2xl opacity-60 animate-pulse-glow"></div>
+
+        <div class="relative glass-panel p-8 sm:p-10 lg:p-12 rounded-3xl border border-cyan-500/40"
+             style="box-shadow: 0 0 80px rgba(0,243,255,0.25), inset 0 0 60px rgba(0,243,255,0.05);">
+
+            <div class="flex justify-center flex-wrap gap-2 mb-5">
+                <span class="px-4 py-1.5 rounded-full text-xs lg:text-sm font-black bg-gradient-to-r from-amber-500 to-yellow-400 text-black shadow-lg badge-glow">PRO MAX</span>
+                <span class="px-4 py-1.5 rounded-full text-xs lg:text-sm font-black bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg">PREMIUM</span>
+                <span class="px-4 py-1.5 rounded-full text-xs lg:text-sm font-black bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white shadow-lg">LIMITED</span>
+                <span class="px-4 py-1.5 rounded-full text-xs lg:text-sm font-black bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-lg">MAX</span>
+            </div>
+
+            <div class="w-24 h-24 lg:w-28 lg:h-28 mx-auto rounded-full bg-gradient-to-tr from-cyan-500 via-brand-600 to-amber-400 flex items-center justify-center text-5xl lg:text-6xl text-white shadow-2xl animate-pulse-glow">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-center mt-6">
+                <span class="gradient-text">MaxTube Pro MAX</span>
+            </h1>
+            <p class="text-center text-sm lg:text-base text-gray-300 mt-3">
+                🔐 خەزنەیا پریمیۆم - تەنێ ب <strong class="text-amber-400">کلیلا تایبەت</strong> ڤەدبیت
+            </p>
+
+            <div class="mt-6 bg-gray-950/80 border border-amber-500/40 rounded-2xl p-4 text-center">
+                <div class="text-xs lg:text-sm text-amber-400 font-bold">🔥 ئۆفەرا تایبەت یا ئێرۆکە</div>
+                <div class="text-3xl lg:text-4xl font-black text-white font-mono mt-2 tracking-widest" id="countdownTimer">09:59:59</div>
+            </div>
+
+            <div class="mt-6 space-y-4">
+                <label class="text-sm lg:text-base text-gray-400 block flex items-center gap-2">
+                    <i class="fa-solid fa-key text-cyan-400"></i>
+                    کلیلا چالاککرنێ بنویسە:
+                </label>
+                <input type="text" id="licenseKeyInput"
+                       placeholder="MAXTUBE-XXXX-XXXX-XXXX-XXXX"
+                       class="w-full px-5 py-4 bg-gray-950 border-2 border-gray-700 rounded-xl text-white text-center font-mono text-base lg:text-lg tracking-widest focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-500/20 transition uppercase"
+                       dir="ltr" autocomplete="off" spellcheck="false">
+
+                <button id="activateBtn" onclick="activateLicense()"
+                        class="w-full py-4 bg-gradient-to-r from-cyan-500 via-brand-500 to-amber-500 text-white font-black rounded-xl glow-button text-base lg:text-lg flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-unlock-keyhole"></i>
+                    <span>چالاککرن و دەستپێکرن</span>
+                </button>
+            </div>
+
+            <div id="licenseError" class="hidden mt-4 text-center text-sm text-red-300 bg-red-950/50 border border-red-500/40 rounded-xl p-3"></div>
+            <div id="licenseSuccess" class="hidden mt-4 text-center text-sm text-emerald-300 bg-emerald-950/50 border border-emerald-500/40 rounded-xl p-3"></div>
+
+            <div class="flex items-center gap-3 my-6">
+                <div class="flex-grow h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+                <span class="text-xs text-gray-500 font-bold">کلیل نینە؟</span>
+                <div class="flex-grow h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+            </div>
+
+            <a id="whatsappBuyBtn" href="#" target="_blank" rel="noopener"
+               class="w-full py-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black rounded-xl flex items-center justify-center gap-3 text-base lg:text-lg shadow-2xl transition hover:scale-[1.02]"
+               style="box-shadow: 0 0 30px rgba(16,185,129,0.5);">
+                <i class="fa-brands fa-whatsapp text-3xl"></i>
+                <span>کڕینا کلیلێ ژ WhatsApp</span>
+            </a>
+            <div class="text-center text-sm text-gray-400 mt-3 font-mono tracking-wider" dir="ltr">
+                <i class="fa-solid fa-phone text-emerald-400"></i> +964 750 604 5491
+            </div>
+
+            <div class="mt-7 grid grid-cols-3 gap-3 text-center">
+                <div class="bg-gray-950/60 border border-gray-800 rounded-xl p-4">
+                    <i class="fa-solid fa-infinity text-cyan-400 text-2xl"></i>
+                    <div class="text-gray-300 mt-2 font-bold text-xs lg:text-sm">هەمی کوالێتی</div>
+                </div>
+                <div class="bg-gray-950/60 border border-gray-800 rounded-xl p-4">
+                    <i class="fa-solid fa-bolt text-amber-400 text-2xl"></i>
+                    <div class="text-gray-300 mt-2 font-bold text-xs lg:text-sm">10 Gbps</div>
+                </div>
+                <div class="bg-gray-950/60 border border-gray-800 rounded-xl p-4">
+                    <i class="fa-solid fa-shield-halved text-emerald-400 text-2xl"></i>
+                    <div class="text-gray-300 mt-2 font-bold text-xs lg:text-sm">100% سەلامەت</div>
+                </div>
+            </div>
+
+            <p class="text-center text-xs text-gray-600 mt-6">
+                © 2026 MaxTube Pro MAX • هەمی ماف پارێزراون 🖤
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================
+     🎯 MAIN APP
+     ======================================================== -->
+<div id="mainApp" class="hidden min-h-screen flex-col justify-between">
+    <canvas id="bgParticles"></canvas>
+
+    <!-- Ticker -->
+    <div class="bg-gradient-to-r from-brand-900 via-gray-950 to-purple-950 border-b border-gray-800 text-sm py-2.5 px-4 text-gray-300">
+        <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="flex items-center gap-2 text-cyan-400 font-bold">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+                    <span>PRO MAX ENGINE v5.0 • ACTIVE ✅</span>
+                </span>
+                <span class="hidden md:inline text-gray-600">|</span>
+                <span class="hidden md:inline text-gray-400">🔥 شیکارکری: <strong class="text-white font-mono" id="todayCount">4,892,104</strong></span>
+            </div>
+            <div class="flex items-center gap-4 text-xs">
+                <div class="flex items-center gap-2 bg-gray-900 px-3 py-1.5 rounded-full border border-gray-800">
+                    <i class="fa-solid fa-server text-emerald-400"></i>
+                    <select id="serverSelect" onchange="changeServerNode()" class="bg-transparent text-emerald-300 font-bold outline-none cursor-pointer text-xs">
+                        <option value="de" class="bg-gray-900">Frankfurt Ultra (12ms)</option>
+                        <option value="tokyo" class="bg-gray-900">Tokyo VIP (28ms)</option>
+                        <option value="us" class="bg-gray-900">US East Turbo (35ms)</option>
+                        <option value="sg" class="bg-gray-900">Singapore Ultra (19ms)</option>
+                    </select>
+                </div>
+                <button onclick="openSpeedTestModal()" class="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1.5">
+                    <i class="fa-solid fa-gauge"></i>
+                    <span class="hidden sm:inline">تاقیکرنا خێراییێ</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 h-24 flex items-center justify-between">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="playUiSound(); resetToHome();">
+                <div class="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 via-brand-600 to-amber-400 flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-cyan-500/20 animate-pulse-glow">
+                    <i class="fa-solid fa-bolt-lightning text-yellow-300"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-2xl lg:text-3xl font-black tracking-wider text-white">MaxTube</span>
+                        <span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-black text-[11px] lg:text-xs px-2.5 py-1 rounded-full uppercase tracking-widest badge-glow">PRO MAX</span>
+                        <span class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-black text-[10px] lg:text-xs px-2.5 py-1 rounded-full uppercase">PREMIUM</span>
+                    </div>
+                    <p class="text-xs lg:text-sm text-cyan-400/80 font-medium mt-0.5">داونلۆدەرا جیهانی یا هەمی جۆرێن ڤیدیۆیان</p>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-5">
+                <a href="#features" class="text-sm font-semibold text-gray-300 hover:text-cyan-400 transition">تایبەتمەندی</a>
+                <a href="#supported" class="text-sm font-semibold text-gray-300 hover:text-cyan-400 transition">کوالێتی</a>
+                <a href="#historySec" class="text-sm font-semibold text-gray-300 hover:text-cyan-400 transition">مێژوو</a>
+                <a href="#faq" class="text-sm font-semibold text-gray-300 hover:text-cyan-400 transition">FAQ</a>
+                <button onclick="playUiSound(); openPublishGuideModal();" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-rocket"></i> بەلاڤکرن
+                </button>
+                <button onclick="playUiSound(); openPlaylistModal();" class="bg-gray-800 hover:bg-gray-700 text-amber-400 border border-amber-500/40 px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Playlist
+                </button>
+            </div>
+
+            <button onclick="toggleMobileMenu()" class="lg:hidden text-gray-300 hover:text-white text-3xl p-2">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <div id="mobileMenu" class="hidden lg:hidden border-t border-gray-800 bg-gray-950/95 px-6 py-5 space-y-4">
+            <a href="#features" onclick="toggleMobileMenu()" class="block text-base text-gray-300 hover:text-white py-2">تایبەتمەندی</a>
+            <a href="#supported" onclick="toggleMobileMenu()" class="block text-base text-gray-300 hover:text-white py-2">کوالێتی</a>
+            <a href="#historySec" onclick="toggleMobileMenu()" class="block text-base text-gray-300 hover:text-white py-2">مێژوو</a>
+            <a href="#faq" onclick="toggleMobileMenu()" class="block text-base text-gray-300 hover:text-white py-2">FAQ</a>
+            <div class="pt-3 flex flex-col gap-3">
+                <button onclick="openPublishGuideModal(); toggleMobileMenu();" class="w-full text-center bg-emerald-600 text-white font-bold py-3 rounded-xl text-sm">
+                    <i class="fa-solid fa-rocket"></i> ڕێنما بەلاڤکرنێ
+                </button>
+                <button onclick="openPlaylistModal(); toggleMobileMenu();" class="w-full text-center bg-gray-800 text-amber-400 font-bold py-3 rounded-xl text-sm border border-amber-500/30">
+                    <i class="fa-solid fa-list-check"></i> Playlist
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-10 lg:py-16 space-y-14 lg:space-y-20">
+
+        <!-- Hero -->
+        <div class="text-center space-y-5 max-w-5xl mx-auto">
+            <div class="inline-flex items-center gap-2 bg-cyan-950/70 border border-cyan-500/40 text-cyan-300 text-sm font-bold px-5 py-2 rounded-full animate-float shadow-lg">
+                <i class="fa-solid fa-crown text-amber-400"></i>
+                ژمارە 1 ل سەر ئاستێ جیهانێ • PRO MAX 2026
+            </div>
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-tight">
+                داونلۆدکرنا هەمی ڤیدیۆیان ب <span class="gradient-text">کوالێتیا PRO MAX</span>
+            </h1>
+            <p class="text-base lg:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto">
+                ڤیدیۆیێن درێژ، Shorts، TikTok، Reels ب 8K HDR, 4K, 1080p 60FPS و دەنگێ MP3 & FLAC ب بێ ڕێکلام.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm text-gray-400">
+                <span class="flex items-center gap-2 bg-gray-900/80 px-4 py-2 rounded-full border border-gray-800"><i class="fa-brands fa-youtube text-red-500 text-lg"></i> YouTube</span>
+                <span class="flex items-center gap-2 bg-gray-900/80 px-4 py-2 rounded-full border border-gray-800"><i class="fa-brands fa-tiktok text-cyan-400 text-lg"></i> TikTok</span>
+                <span class="flex items-center gap-2 bg-gray-900/80 px-4 py-2 rounded-full border border-gray-800"><i class="fa-brands fa-instagram text-pink-500 text-lg"></i> Reels</span>
+                <span class="flex items-center gap-2 bg-gray-900/80 px-4 py-2 rounded-full border border-gray-800"><i class="fa-brands fa-facebook text-blue-500 text-lg"></i> Facebook</span>
+            </div>
+        </div>
+
+        <!-- URL Form -->
+        <div class="glass-panel p-6 lg:p-10 rounded-3xl shadow-2xl relative overflow-hidden border border-cyan-500/30 max-w-5xl mx-auto">
+            <div class="absolute -top-28 -left-28 w-80 h-80 bg-cyan-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-28 -right-28 w-80 h-80 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <form id="urlForm" onsubmit="handleVideoFetch(event)" class="relative z-10 space-y-6">
+                <div class="relative flex flex-col md:flex-row items-center gap-4">
+                    <div class="relative w-full">
+                        <div class="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-link text-2xl text-cyan-400"></i>
+                        </div>
+                        <input type="text" id="videoUrl" placeholder="لینکێ ڤیدیۆ، Shorts، TikTok یان دەنگی لێرە بچەسپێنە..."
+                            class="w-full pr-16 pl-32 py-5 lg:py-6 bg-gray-950/90 border-2 border-gray-700/80 rounded-2xl text-white placeholder-gray-500 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/20 focus:outline-none transition text-base lg:text-lg font-medium shadow-inner" required>
+                        <button type="button" onclick="playUiSound(); pasteFromClipboard();"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 bg-gray-800 hover:bg-gray-700 text-cyan-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition border border-cyan-500/30 flex items-center gap-2">
+                            <i class="fa-regular fa-clipboard"></i>
+                            <span class="hidden sm:inline">چەسپاندن</span>
+                        </button>
+                    </div>
+                    <button type="submit" id="submitBtn" onclick="playUiSound()"
+                            class="w-full md:w-auto px-10 lg:px-12 py-5 lg:py-6 bg-gradient-to-r from-cyan-500 via-brand-500 to-amber-500 text-white font-black text-lg rounded-2xl glow-button flex items-center justify-center gap-3 shrink-0 cursor-pointer">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>شیکار بکە</span>
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-sm text-gray-400">
+                    <span class="font-bold text-gray-300"><i class="fa-solid fa-flask text-amber-400"></i> تاقیکرن:</span>
+                    <button type="button" onclick="playUiSound(); setPresetUrl('short');" class="bg-gray-800/80 hover:bg-cyan-950/80 hover:text-cyan-300 border border-gray-700/60 px-4 py-2 rounded-lg transition">⚡ Shorts</button>
+                    <button type="button" onclick="playUiSound(); setPresetUrl('4k');" class="bg-gray-800/80 hover:bg-cyan-950/80 hover:text-cyan-300 border border-gray-700/60 px-4 py-2 rounded-lg transition">🎬 8K Ultra HD</button>
+                    <button type="button" onclick="playUiSound(); setPresetUrl('music');" class="bg-gray-800/80 hover:bg-cyan-950/80 hover:text-cyan-300 border border-gray-700/60 px-4 py-2 rounded-lg transition">🎵 MP3 / FLAC</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingState" class="hidden text-center py-16 space-y-5">
+            <div class="relative w-24 h-24 mx-auto">
+                <div class="absolute inset-0 rounded-full border-4 border-cyan-500/20"></div>
+                <div class="absolute inset-0 rounded-full border-4 border-cyan-400 border-t-transparent animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-cyan-400 text-2xl font-black">
+                    <i class="fa-solid fa-bolt animate-pulse"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-white">د شیکارکرنێ دا یە...</h3>
+                <p id="loadingStatusText" class="text-base text-cyan-400 mt-2">پەیوەندی ب سێرڤەرێت خێرا دەێتکرن</p>
+            </div>
+        </div>
+
+        <!-- Results Dashboard -->
+        <div id="resultsDashboard" class="hidden space-y-8">
+            <div class="glass-panel p-6 lg:p-10 rounded-3xl border border-gray-800 flex flex-col xl:flex-row gap-8 items-center">
+                <div class="relative w-full xl:w-[500px] aspect-video rounded-2xl overflow-hidden group shadow-2xl shrink-0 bg-gray-900 border border-gray-800">
+                    <img id="resThumbnail" src="" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <div id="resBadge" class="absolute top-4 right-4 bg-cyan-600/90 backdrop-blur-md text-white text-sm font-black px-4 py-1.5 rounded-full uppercase shadow">8K Ultra HD</div>
+                    <div id="resDuration" class="absolute bottom-4 right-4 bg-black/85 backdrop-blur-md text-white text-sm font-bold px-3 py-1.5 rounded-md">10:25</div>
+                    <button onclick="playUiSound(); toggleLivePreview();" class="absolute inset-0 m-auto w-20 h-20 bg-brand-600/90 hover:bg-cyan-500 text-white rounded-full flex items-center justify-center text-3xl shadow-2xl backdrop-blur-md transition group-hover:scale-110">
+                        <i class="fa-solid fa-play pr-1"></i>
+                    </button>
+                    <button onclick="playUiSound(); downloadThumbnail();" class="absolute top-4 left-4 bg-black/70 hover:bg-black/90 text-white text-sm font-bold p-3 rounded-xl backdrop-blur-md transition border border-white/20">
+                        <i class="fa-solid fa-image"></i>
+                    </button>
+                </div>
+
+                <div class="flex-grow space-y-5 text-right w-full">
+                    <div class="flex flex-wrap items-center gap-3 text-sm">
+                        <span id="resChannel" class="bg-gray-800/90 text-amber-400 border border-amber-500/20 px-4 py-2 rounded-full font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check"></i><span>کەنالێ فەرمی</span>
+                        </span>
+                        <span id="resViews" class="bg-gray-800/60 text-gray-300 px-4 py-2 rounded-full font-medium">👁️ 1.2M</span>
+                        <span id="resDate" class="bg-gray-800/60 text-gray-300 px-4 py-2 rounded-full font-medium">📅 2026</span>
+                    </div>
+
+                    <h2 id="resTitle" class="text-2xl lg:text-3xl font-black text-white leading-snug line-clamp-2">ناڤنیشانێ ڤیدیۆیێ</h2>
+
+                    <div id="liveAudioPlayer" class="hidden bg-gray-950/90 border border-cyan-500/40 p-4 rounded-2xl flex items-center gap-4">
+                        <button onclick="toggleAudioPlayback()" id="audioPlayBtn" class="w-12 h-12 rounded-xl bg-cyan-500 text-black flex items-center justify-center font-bold text-xl">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                        <div class="flex-grow">
+                            <div class="text-sm text-cyan-300 font-bold mb-1">گوێبیستبونا ڕاستەوخۆ</div>
+                            <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden">
+                                <div id="audioProgress" class="bg-cyan-400 h-full w-1/3"></div>
+                            </div>
+                        </div>
+                        <span class="text-sm font-mono text-gray-400">01:15 / 04:30</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 pt-3 border-t border-gray-800/80">
+                        <button onclick="playUiSound(); switchTab('video');" id="tabVideo" class="tab-btn bg-cyan-500 text-black font-extrabold px-6 py-3 rounded-xl text-sm transition flex items-center gap-2 shadow-md">
+                            <i class="fa-solid fa-video"></i> ڤیدیۆ
+                        </button>
+                        <button onclick="playUiSound(); switchTab('audio');" id="tabAudio" class="tab-btn bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-6 py-3 rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-music"></i> MP3 / FLAC
+                        </button>
+                        <button onclick="playUiSound(); switchTab('gif');" id="tabGif" class="tab-btn bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-6 py-3 rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-video"></i> GIF
+                        </button>
+                        <button onclick="playUiSound(); switchTab('trim');" id="tabTrim" class="tab-btn bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-6 py-3 rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-scissors"></i> Trimmer
+                        </button>
+                        <button onclick="playUiSound(); switchTab('subtitles');" id="tabSubtitles" class="tab-btn bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-6 py-3 rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-closed-captioning"></i> ژێرنووس
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contentVideo" class="tab-content space-y-5">
+                <div class="flex items-center justify-between px-2 flex-wrap gap-3">
+                    <h3 class="text-lg lg:text-2xl font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-film text-cyan-400"></i> کوالێتیا ڤیدیۆیێ:
+                    </h3>
+                    <span class="text-sm text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-500/30 px-4 py-2 rounded-full">✨ 60/120 FPS</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" id="videoQualityGrid"></div>
+            </div>
+
+            <div id="contentAudio" class="tab-content hidden space-y-5">
+                <div class="flex items-center justify-between px-2 flex-wrap gap-3">
+                    <h3 class="text-lg lg:text-2xl font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-headphones text-amber-400"></i> فۆرماتێن دەنگی - FLAC & MP3
+                    </h3>
+                    <span class="text-sm text-amber-400 font-semibold bg-amber-950/60 border border-amber-500/30 px-4 py-2 rounded-full">🎵 Lossless</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" id="audioQualityGrid"></div>
+            </div>
+
+            <div id="contentGif" class="tab-content hidden glass-panel p-8 rounded-3xl space-y-6">
+                <div>
+                    <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-file-video text-purple-400"></i> ڤەگوھۆڕین بۆ GIF
+                    </h3>
+                    <p class="text-sm text-gray-400 mt-2">تاسنوری 10 چڕکان - GIF HQ.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="bg-gray-950/80 p-5 rounded-2xl border border-gray-800 space-y-3">
+                        <label class="text-sm text-gray-300 block font-bold">FPS:</label>
+                        <select id="gifFps" class="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded-xl text-sm">
+                            <option value="30">30 FPS (زۆر زەلال)</option>
+                            <option value="15">15 FPS (قەبارێ ئاسایی)</option>
+                        </select>
+                    </div>
+                    <div class="bg-gray-950/80 p-5 rounded-2xl border border-gray-800 space-y-3">
+                        <label class="text-sm text-gray-300 block font-bold">ڕوونی:</label>
+                        <select id="gifRes" class="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded-xl text-sm">
+                            <option value="720p">720p HD</option>
+                            <option value="480p">480p Medium</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="playUiSound(); startDownload('GIF Animated Clip', 'GIF 30fps', '14.2 MB');" class="w-full py-4 bg-gradient-to-r from-purple-600 to-cyan-500 font-bold text-white rounded-xl shadow-lg transition text-base flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-wand-magic"></i> دروستکرن و داونلۆدکرنا GIF
+                </button>
+            </div>
+
+            <div id="contentTrim" class="tab-content hidden glass-panel p-8 rounded-3xl space-y-6">
+                <div>
+                    <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-scissors text-brand-400"></i> بڕینا ڤیدیۆیێ (Trimmer)
+                    </h3>
+                </div>
+                <div class="space-y-6 bg-gray-950/80 p-8 rounded-2xl border border-gray-800">
+                    <div class="flex items-center justify-between text-base font-bold flex-wrap gap-3">
+                        <span class="text-cyan-400">دەستپێک: <span id="trimStartVal" class="font-mono">00:00</span></span>
+                        <span class="text-amber-400">دووماهی: <span id="trimEndVal" class="font-mono">03:30</span></span>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm text-gray-400 block mb-2 font-bold">Start:</label>
+                            <input type="range" id="trimStart" min="0" max="100" value="0" oninput="updateTrimValues()" class="w-full accent-cyan-400 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 block mb-2 font-bold">End:</label>
+                            <input type="range" id="trimEnd" min="0" max="100" value="70" oninput="updateTrimValues()" class="w-full accent-amber-500 cursor-pointer">
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400 pt-4 border-t border-gray-800">
+                        <span>دەمێ هەلبژارتى: <strong id="trimSelectedDuration" class="text-white font-mono text-lg">03:30</strong></span>
+                        <button onclick="playUiSound(); startDownload('Trimmed Video MP4', '720p Cut', '35 MB');" class="w-full sm:w-auto bg-gradient-to-r from-brand-600 to-amber-500 text-white font-bold px-8 py-3.5 rounded-xl transition flex items-center justify-center gap-3 shadow-lg">
+                            <i class="fa-solid fa-download"></i> داونلۆدکرن
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contentSubtitles" class="tab-content hidden space-y-5">
+                <div class="flex items-center justify-between px-2">
+                    <h3 class="text-lg lg:text-2xl font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-closed-captioning text-blue-400"></i> ژێرنووس (SRT / VTT)
+                    </h3>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" id="subtitleGrid"></div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <section id="historySec" class="space-y-5 pt-4">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <h2 class="text-2xl lg:text-3xl font-bold text-white flex items-center gap-3">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> مێژووی داونلۆدان
+                </h2>
+                <button onclick="playUiSound(); clearHistory();" class="text-sm text-gray-400 hover:text-red-400 transition px-4 py-2 border border-gray-700 rounded-xl">
+                    <i class="fa-solid fa-trash"></i> پاککرنەوە
+                </button>
+            </div>
+            <div id="historyGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <div class="col-span-full text-center py-10 glass-panel rounded-2xl text-base text-gray-500">
+                    چ داونلۆد نینە. لینکەکێ بچەسپێنە!
+                </div>
+            </div>
+        </section>
+
+        <!-- Supported -->
+        <section id="supported" class="space-y-8 pt-6">
+            <div class="text-center space-y-3">
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-white">پشتیوانیکرنا هەمی فۆرمات و کوالێتیان</h2>
+                <p class="text-base text-gray-400">ب سۆپەر خێرایی و بێ سنور</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+                <div class="glass-card p-6 rounded-2xl text-center space-y-2 border border-gray-800 hover:border-cyan-500/50 transition hover:scale-105">
+                    <div class="text-4xl text-cyan-400 font-black">8K/4K</div>
+                    <div class="text-sm font-bold text-white">Ultra HD</div>
+                    <p class="text-xs text-gray-400">4320p 60fps</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl text-center space-y-2 border border-gray-800 hover:border-cyan-500/50 transition hover:scale-105">
+                    <div class="text-4xl text-amber-400 font-black">FLAC</div>
+                    <div class="text-sm font-bold text-white">Lossless</div>
+                    <p class="text-xs text-gray-400">دەنگێ ستۆدیۆ</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl text-center space-y-2 border border-gray-800 hover:border-cyan-500/50 transition hover:scale-105">
+                    <div class="text-4xl text-rose-400 font-black">Shorts</div>
+                    <div class="text-sm font-bold text-white">TikTok & Reels</div>
+                    <p class="text-xs text-gray-400">ڤیدیۆیێن کورت</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl text-center space-y-2 border border-gray-800 hover:border-cyan-500/50 transition hover:scale-105">
+                    <div class="text-4xl text-emerald-400 font-black">320k</div>
+                    <div class="text-sm font-bold text-white">MP3 HQ</div>
+                    <p class="text-xs text-gray-400">دەنگێ پاک</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl text-center space-y-2 border border-gray-800 hover:border-cyan-500/50 transition hover:scale-105">
+                    <div class="text-4xl text-blue-400 font-black">List</div>
+                    <div class="text-sm font-bold text-white">Playlist Batch</div>
+                    <p class="text-xs text-gray-400">کۆمەڵە ڤیدیۆ</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl text-center space-y-2 border border-gray-800 hover:border-cyan-500/50 transition hover:scale-105">
+                    <div class="text-4xl text-purple-400 font-black">GIF</div>
+                    <div class="text-sm font-bold text-white">Animated</div>
+                    <p class="text-xs text-gray-400">وێنێ جووڵاو</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section id="features" class="grid grid-cols-1 md:grid-cols-3 gap-7 pt-6">
+            <div class="glass-panel p-8 rounded-3xl space-y-4 border border-gray-800 hover:border-brand-500/40 transition hover:scale-[1.02]">
+                <div class="w-16 h-16 rounded-2xl bg-brand-600/20 text-brand-400 flex items-center justify-center text-3xl font-bold">
+                    <i class="fa-solid fa-gauge-high"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">سۆپەر خێرایی 10Gbps</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">تەکنەلۆجیای Multi-threaded - ب بەرزترین خێرایی.</p>
+            </div>
+            <div class="glass-panel p-8 rounded-3xl space-y-4 border border-gray-800 hover:border-amber-500/40 transition hover:scale-[1.02]">
+                <div class="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-3xl font-bold">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">100% سەلامەت</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">چ پێویست ب ئەکاونت ناکەت، بێ ڕێکلام.</p>
+            </div>
+            <div class="glass-panel p-8 rounded-3xl space-y-4 border border-gray-800 hover:border-emerald-500/40 transition hover:scale-[1.02]">
+                <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-3xl font-bold">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">گونجاو بۆ هەمی ئامێران</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">iPhone, Android, PC - دیزاینێ ڕیسپۆنسیڤ.</p>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq" class="glass-panel p-8 lg:p-12 rounded-3xl space-y-7 max-w-5xl mx-auto border border-gray-800">
+            <div class="text-center space-y-3">
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-white">پرسیارێن بەربەلاڤ (FAQ)</h2>
+            </div>
+            <div class="space-y-4">
+                <details class="group bg-gray-950/70 p-5 rounded-2xl border border-gray-800 cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-white text-base lg:text-lg">
+                        <span>ئەرێ ماڵپەر بەلاشە؟</span>
+                        <i class="fa-solid fa-chevron-down group-open:rotate-180 transition text-brand-400"></i>
+                    </summary>
+                    <p class="text-sm text-gray-400 mt-4 leading-relaxed">بۆ بکارئینانا پریمیۆم پێدڤی ب کلیلا چالاککرنێ هەیە. ب WhatsApp پەیوەندی بکە: +964 750 604 5491</p>
+                </details>
+                <details class="group bg-gray-950/70 p-5 rounded-2xl border border-gray-800 cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-white text-base lg:text-lg">
+                        <span>چەوا Shorts داونلۆد بکەم؟</span>
+                        <i class="fa-solid fa-chevron-down group-open:rotate-180 transition text-brand-400"></i>
+                    </summary>
+                    <p class="text-sm text-gray-400 mt-4 leading-relaxed">لینکێ Shorts کۆپی بکە و ل سەرەوە بچەسپێنە.</p>
+                </details>
+                <details class="group bg-gray-950/70 p-5 rounded-2xl border border-gray-800 cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-white text-base lg:text-lg">
+                        <span>چەوا MP3 بکەم؟</span>
+                        <i class="fa-solid fa-chevron-down group-open:rotate-180 transition text-brand-400"></i>
+                    </summary>
+                    <p class="text-sm text-gray-400 mt-4 leading-relaxed">بچە سەر "MP3 / FLAC" و کوالێتیا 320kbps هەلبژێرە.</p>
+                </details>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800/80 bg-gray-950/80 mt-16 py-10">
+        <div class="max-w-[1600px] mx-auto px-4 text-center space-y-4">
+            <div class="flex items-center justify-center gap-3 flex-wrap">
+                <span class="text-2xl font-black text-white">MaxTube Pro MAX</span>
+                <span class="text-sm text-amber-400 font-bold">2026 PREMIUM</span>
+            </div>
+            <p class="text-sm text-gray-500 max-w-xl mx-auto leading-relaxed">
+                هەمی ماف پارێزراون ژبوو ماڵپەرێ MaxTube. بکارئینانا کەسۆکی.
+            </p>
+            <div class="text-xs text-gray-600">
+                درۆستکری ب بەرزترین کوالێتی 🖤
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- ========================================================
+     🛡️ ADMIN LOGIN MODAL
+     ======================================================== -->
+<div id="adminLoginModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[9998] hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg p-8 rounded-3xl border border-red-500/40 space-y-6">
+        <div class="text-center">
+            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-red-600 to-orange-500 flex items-center justify-center text-4xl text-white shadow-2xl">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h3 class="text-2xl font-black text-white mt-4">داشبۆردا ئەدمینی</h3>
+            <p class="text-sm text-gray-400 mt-2">تەنێ ئەدمین دشێت بچیتە ژوور</p>
+        </div>
+
+        <div class="space-y-4">
+            <input type="password" id="adminPassInput" placeholder="پاسوۆردا ئەدمینی..."
+                class="w-full px-5 py-4 bg-gray-950 border-2 border-gray-700 rounded-xl text-white text-center font-mono text-lg focus:border-red-500 focus:outline-none"
+                dir="ltr">
+            <button onclick="adminLogin()" class="w-full py-4 bg-gradient-to-r from-red-600 to-orange-500 text-white font-black rounded-xl text-base">
+                <i class="fa-solid fa-unlock"></i> چوونەژوور
+            </button>
+        </div>
+        <div id="adminLoginError" class="hidden text-center text-sm text-red-300 bg-red-950/50 border border-red-500/40 rounded-xl p-3"></div>
+        <button onclick="closeAdminLogin()" class="w-full text-sm text-gray-500 underline py-2">داخستن</button>
+    </div>
+</div>
+
+<!-- ========================================================
+     👑 ADMIN DASHBOARD
+     ======================================================== -->
+<div id="adminDashboard" class="fixed inset-0 bg-gray-950 z-[9997] hidden overflow-y-auto">
+    <div class="max-w-[1600px] mx-auto p-6 lg:p-10 space-y-8">
+
+        <div class="glass-panel p-6 lg:p-8 rounded-3xl border border-red-500/40 flex flex-wrap items-center justify-between gap-5">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-600 to-orange-500 flex items-center justify-center text-3xl text-white">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-black text-white">داشبۆردا ئەدمینی</h1>
+                    <p class="text-sm text-gray-400 mt-1">MaxTube Pro MAX • Admin Panel v1.0</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <span class="text-sm bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 px-4 py-2 rounded-full font-bold">
+                    <i class="fa-solid fa-circle text-[8px] animate-pulse"></i> سێرڤەر چالاک
+                </span>
+                <button onclick="closeAdminDashboard()" class="bg-gray-800 hover:bg-red-600 text-white px-5 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-xmark"></i> داخستن
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="glass-card p-6 rounded-2xl border border-cyan-500/30">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm text-gray-400 font-bold">کۆما کلیلان</div>
+                        <div id="statTotal" class="text-4xl font-black text-white mt-2">0</div>
+                    </div>
+                    <i class="fa-solid fa-key text-cyan-400 text-4xl"></i>
+                </div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl border border-emerald-500/30">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm text-gray-400 font-bold">چالاک</div>
+                        <div id="statActive" class="text-4xl font-black text-emerald-400 mt-2">0</div>
+                    </div>
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-4xl"></i>
+                </div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl border border-amber-500/30">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm text-gray-400 font-bold">بکارهێنرن</div>
+                        <div id="statUsed" class="text-4xl font-black text-amber-400 mt-2">0</div>
+                    </div>
+                    <i class="fa-solid fa-users text-amber-400 text-4xl"></i>
+                </div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl border border-red-500/30">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm text-gray-400 font-bold">ناچالاک</div>
+                        <div id="statRevoked" class="text-4xl font-black text-red-400 mt-2">0</div>
+                    </div>
+                    <i class="fa-solid fa-ban text-red-400 text-4xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-8 rounded-3xl border border-gray-800 space-y-6">
+            <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                دروستکرنا کلیلا نوی
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="space-y-3">
+                    <label class="text-sm text-gray-400 block font-bold">جۆرێ کلیلێ:</label>
+                    <select id="keyType" class="w-full bg-gray-950 border border-gray-700 text-white p-4 rounded-xl text-base focus:border-amber-500 focus:outline-none">
+                        <option value="PRO-MAX">👑 PRO MAX (ساڵانە)</option>
+                        <option value="PREMIUM">💎 PREMIUM (٦ مانگ)</option>
+                        <option value="LIMITED">⚡ LIMITED (٣ مانگ)</option>
+                        <option value="MAX">🔥 MAX (١ مانگ)</option>
+                        <option value="TRIAL">🎁 TRIAL (٧ ڕۆژ)</option>
+                        <option value="LIFETIME">🏆 LIFE-TIME (ئەبەدی)</option>
+                    </select>
+                </div>
+                <div class="space-y-3">
+                    <label class="text-sm text-gray-400 block font-bold">ژمارا کلیلان:</label>
+                    <input type="number" id="keyCount" value="1" min="1" max="100"
+                        class="w-full bg-gray-950 border border-gray-700 text-white p-4 rounded-xl text-base focus:border-amber-500 focus:outline-none">
+                </div>
+                <div class="space-y-3">
+                    <label class="text-sm text-gray-400 block font-bold">دووماهیا (ڕۆژ):</label>
+                    <input type="number" id="keyDays" value="365" min="1"
+                        class="w-full bg-gray-950 border border-gray-700 text-white p-4 rounded-xl text-base focus:border-amber-500 focus:outline-none">
+                </div>
+            </div>
+
+            <button onclick="generateKeys()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black rounded-xl text-base transition hover:scale-[1.01]">
+                <i class="fa-solid fa-bolt"></i> دروستکرنا کلیلان
+            </button>
+
+            <div id="generatedKeysBox" class="hidden bg-gray-950/80 border border-amber-500/40 p-5 rounded-2xl space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <span class="text-sm font-bold text-amber-400">✅ کلیلێن نوێ هاتنە دروستکرن:</span>
+                    <button onclick="copyAllGeneratedKeys()" class="text-sm bg-amber-500 text-black px-4 py-2 rounded-lg font-bold">
+                        <i class="fa-solid fa-copy"></i> کۆپیکرنا هەمی
+                    </button>
+                </div>
+                <div id="generatedKeysList" class="space-y-2 font-mono text-sm text-white max-h-64 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-8 rounded-3xl border border-gray-800 space-y-5">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                    <i class="fa-solid fa-list text-cyan-400"></i>
+                    لیستا کلیلان
+                </h2>
+                <div class="flex gap-3 flex-wrap">
+                    <input type="text" id="searchKey" oninput="renderKeys()" placeholder="لێگەریان..."
+                        class="bg-gray-950 border border-gray-700 text-white px-4 py-2.5 rounded-lg text-sm focus:outline-none focus:border-cyan-500">
+                    <button onclick="exportKeys()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2.5 rounded-lg text-sm font-bold">
+                        <i class="fa-solid fa-download"></i> Export
+                    </button>
+                    <button onclick="clearAllKeys()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2.5 rounded-lg text-sm font-bold">
+                        <i class="fa-solid fa-trash"></i> پاککرن
+                    </button>
+                </div>
+            </div>
+
+            <div id="keysListContainer" class="space-y-3 max-h-[500px] overflow-y-auto">
+                <div class="text-center py-10 text-gray-500 text-base">چ کلیل نینە. ل سەرەوە کلیلەکێ دروست بکە!</div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-8 rounded-3xl border border-gray-800 space-y-5">
+            <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                <i class="fa-solid fa-gear text-amber-400"></i>
+                ڕێکخستن
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-3">
+                    <label class="text-sm text-gray-400 font-bold">پاسوۆردا ئەدمینی (بگوهۆڕە):</label>
+                    <input type="text" id="newAdminPass" placeholder="پاسوۆردا نوێ..."
+                        class="w-full bg-gray-950 border border-gray-700 text-white p-4 rounded-xl text-base font-mono focus:border-amber-500 focus:outline-none" dir="ltr">
+                </div>
+                <div class="space-y-3">
+                    <label class="text-sm text-gray-400 font-bold">ژمارا WhatsApp:</label>
+                    <input type="text" id="newWhatsapp" placeholder="9647506045491"
+                        class="w-full bg-gray-950 border border-gray-700 text-white p-4 rounded-xl text-base font-mono focus:border-amber-500 focus:outline-none" dir="ltr">
+                </div>
+            </div>
+            <button onclick="saveAdminSettings()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-base">
+                <i class="fa-solid fa-save"></i> پاراستنا ڕێکخستنان
+            </button>
+        </div>
+
+        <div class="text-center text-sm text-gray-600 pb-8">
+            MaxTube Pro MAX • Admin Panel © 2026
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================
+     PUBLISH MODAL
+     ======================================================== -->
+<div id="publishModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-2xl p-8 rounded-3xl space-y-6 relative border border-emerald-500/40 max-h-[90vh] overflow-y-auto">
+        <button onclick="closePublishGuideModal()" class="absolute top-5 left-5 text-gray-400 hover:text-white text-2xl">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-3xl font-bold">
+                <i class="fa-solid fa-rocket"></i>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-white">ڕێنما بەلاڤکرنێ</h3>
+                <p class="text-sm text-gray-400">ب خۆڕایی بەلاڤ بکە!</p>
+            </div>
+        </div>
+        <div class="space-y-4 text-sm text-gray-300 leading-relaxed">
+            <div class="bg-gray-950/80 p-5 rounded-2xl border border-gray-800 space-y-3">
+                <h4 class="font-bold text-emerald-400 text-base"><i class="fa-solid fa-1"></i> Netlify Drop (بێ کۆد):</h4>
+                <ol class="list-decimal list-inside space-y-2 pr-3">
+                    <li>پەڕگەیا <code class="bg-gray-800 px-2 py-0.5 rounded text-amber-400 font-mono">index.html</code> خەزن بکە.</li>
+                    <li>بچە سەر <strong>app.netlify.com/drop</strong></li>
+                    <li>Drag & Drop بکە.</li>
+                    <li>د 10 چڕکان دا لینک ئامادە دبێت!</li>
+                </ol>
+            </div>
+            <div class="bg-gray-950/80 p-5 rounded-2xl border border-gray-800 space-y-3">
+                <h4 class="font-bold text-amber-400 text-base"><i class="fa-solid fa-2"></i> Vercel / GitHub Pages:</h4>
+                <p>پەڕگە بخە GitHub و ل Vercel بەلاڤ بکە.</p>
+            </div>
+        </div>
+        <button onclick="closePublishGuideModal()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 font-bold text-white rounded-xl text-sm">
+            تێگەهشتم
+        </button>
+    </div>
+</div>
+
+<!-- ========================================================
+     PLAYLIST MODAL
+     ======================================================== -->
+<div id="playlistModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-xl p-8 rounded-3xl space-y-6 relative border border-amber-500/30">
+        <button onclick="closePlaylistModal()" class="absolute top-5 left-5 text-gray-400 hover:text-white text-2xl">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-white">Playlist Batch</h3>
+                <p class="text-sm text-gray-400">لینکێ playlist لێرە بچەسپێنە</p>
+            </div>
+        </div>
+        <div class="space-y-4">
+            <input type="text" id="playlistUrl" placeholder="https://www.youtube.com/playlist?list=..."
+                class="w-full px-5 py-4 bg-gray-950 border border-gray-700 rounded-xl text-white text-base focus:outline-none focus:border-amber-500" dir="ltr">
+            <div class="bg-gray-950/60 p-5 rounded-xl border border-gray-800">
+                <div class="flex items-center justify-between text-sm text-gray-300">
+                    <span>کوالێتی:</span>
+                    <select id="playlistQuality" class="bg-gray-800 text-white rounded-lg px-4 py-2 border border-gray-700 text-sm">
+                        <option value="1080p">1080p</option>
+                        <option value="720p">720p</option>
+                        <option value="mp3">MP3</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="processPlaylist()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-brand-600 font-bold text-white rounded-xl shadow-lg text-base">دەستپێکرن</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================
+     DOWNLOAD MODAL
+     ======================================================== -->
+<div id="downloadModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg p-8 rounded-3xl space-y-6 text-center border border-brand-500/30">
+        <div class="w-20 h-20 rounded-full bg-brand-600/20 text-brand-500 flex items-center justify-center text-4xl mx-auto animate-bounce">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+        </div>
+        <div class="space-y-2">
+            <h3 class="text-2xl font-bold text-white" id="dlModalTitle">پرۆسێسکرن...</h3>
+            <p class="text-sm text-gray-400" id="dlModalSubtitle">کوالێتی: 1080p</p>
+        </div>
+        <div class="space-y-3">
+            <div class="w-full bg-gray-800 h-4 rounded-full overflow-hidden p-1 border border-gray-700">
+                <div id="dlProgressBar" class="bg-gradient-to-r from-brand-600 via-brand-500 to-amber-400 h-full rounded-full w-0 transition-all duration-300"></div>
+            </div>
+            <div class="flex justify-between items-center text-sm font-mono text-gray-400">
+                <span id="dlSpeed">24.5 MB/s</span>
+                <span id="dlPercent" class="font-bold text-brand-400">0%</span>
+            </div>
+        </div>
+        <div id="dlSuccessAction" class="hidden pt-2">
+            <a id="realDownloadAnchor" href="#" download
+                class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 font-bold text-white rounded-xl shadow-lg text-base flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-check"></i> دابەزێنە
+            </a>
+        </div>
+        <button onclick="closeDownloadModal()" class="text-sm text-gray-500 hover:text-gray-300 underline">داخستن</button>
+    </div>
+</div>
+
+<!-- ========================================================
+     SPEED TEST MODAL
+     ======================================================== -->
+<div id="speedTestModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg p-8 rounded-3xl space-y-6 text-center border border-cyan-500/40">
+        <div class="w-20 h-20 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-4xl mx-auto">
+            <i class="fa-solid fa-gauge-high"></i>
+        </div>
+        <div>
+            <h3 class="text-xl font-bold text-white">تاقیکرنا خێراییێ</h3>
+            <p class="text-sm text-gray-400">ژبوو 8K و 4K</p>
+        </div>
+        <div class="space-y-3">
+            <div class="text-5xl font-black text-cyan-400 font-mono" id="speedMeter">0.0 MB/s</div>
+            <div class="text-sm text-gray-400" id="speedStatus">ل بارکێشانێ دا...</div>
+        </div>
+        <button onclick="runSpeedTest()" class="w-full py-3.5 bg-cyan-500 text-black font-extrabold rounded-xl text-sm">دەستپێکرن</button>
+        <button onclick="closeSpeedTestModal()" class="text-sm text-gray-500 underline block mx-auto">داخستن</button>
+    </div>
+</div>
+
+<!-- ========================================================
+     TOAST NOTIFICATION
+     ======================================================== -->
+<div id="toast" class="fixed bottom-6 left-6 z-[10000] bg-gray-900/95 border border-brand-500 text-white px-6 py-4 rounded-2xl shadow-2xl hidden items-center gap-3 text-base">
+    <i id="toastIcon" class="fa-solid fa-circle-info text-brand-400 text-xl"></i>
+    <span id="toastMessage">پەیام</span>
+</div>
+
+<script>
+/* =====================================================
+   ⚙️ CONFIG - ڕێکخستن
+   ===================================================== */
+const API_BASE = window.location.origin;
+const API_SECRET = "maxtube-api-2026-secret-X9K2M";
+
+/* =====================================================
+   🔐 LICENSE SYSTEM
+   ===================================================== */
+const SECRET_KEYS = [
+    'MAXTUBE-PRO1-2026-VIP1',
+    'MAXTUBE-PRO2-2026-VIP2',
+    'MAXTUBE-MAX1-LIFE-TIME',
+    'MAXTUBE-GOLD-VIP9-2026',
+    'MAXTUBE-KURD-2026-STAN',
+    'MAXTUBE-TEST-2026-FREE',
+];
+
+function isValidLicenseLocal(key) {
+    if (!key) return false;
+    key = String(key).toUpperCase().trim().replace(/\s+/g, '');
+    if (SECRET_KEYS.includes(key)) return true;
+
+    try {
+        const db = JSON.parse(localStorage.getItem('maxtube_keys_db') || '[]');
+        const found = db.find(k => k.key === key);
+        if (found && found.status !== 'revoked') return true;
+    } catch(e) {}
+
+    const m = key.match(/^MAXTUBE-([A-Z0-9]{3,4})-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$/);
+    if (!m) return false;
+    const combined = m[1] + m[2] + m[3] + m[4];
+    let sum = 0;
+    for (const c of combined) sum += c.charCodeAt(0);
+    return sum % 17 === 0;
+}
+
+async function activateLicenseServer(key) {
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`${API_BASE}/api/activate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-API-Secret': API_SECRET },
+            body: JSON.stringify({ key, secret: API_SECRET }),
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
+        if (!res.ok) return { success: false, error: 'سێرڤەر بەرسڤ نەدا' };
+        return await res.json();
+    } catch(e) {
+        return { success: null, error: 'سێرڤەر بەردەست نینە' };
+    }
+}
+
+async function activateLicense() {
+    const input = document.getElementById('licenseKeyInput');
+    const key = input.value.trim().toUpperCase();
+    const errEl = document.getElementById('licenseError');
+    const okEl = document.getElementById('licenseSuccess');
+    const btn = document.getElementById('activateBtn');
+    const btnContent = btn.innerHTML;
+
+    errEl.classList.add('hidden');
+    okEl.classList.add('hidden');
+
+    if (!key) {
+        errEl.textContent = 'تکایە کلیلێ بنویسە';
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    btn.innerHTML = '<span class="spinner"></span><span>د پشکنینێ دا...</span>';
+    btn.disabled = true;
+
+    // ١) پشکنینا سێرڤەری
+    const serverResult = await activateLicenseServer(key);
+
+    // ٢) پشکنینا خۆماڵی (fallback)
+    const localValid = isValidLicenseLocal(key);
+
+    const isValid = (serverResult.success === true) || (serverResult.success === null && localValid);
+
+    btn.innerHTML = btnContent;
+    btn.disabled = false;
+
+    if (isValid) {
+        okEl.textContent = '✅ کلیل دروستە! د دەستپێکرنێ دا یە...';
+        okEl.classList.remove('hidden');
+        localStorage.setItem('maxtube_license', key);
+        localStorage.setItem('maxtube_license_date', Date.now());
+        sendLog('activate_success_client', { key });
+        setTimeout(() => unlockApp(), 900);
+    } else {
+        errEl.textContent = serverResult.error || '❌ کلیل نە دروستە! ژ WhatsApp بکڕە: +964 750 604 5491';
+        errEl.classList.remove('hidden');
+        sendLog('activate_fail_client', { key, error: serverResult.error });
+        const panel = document.querySelector('#licenseGate .glass-panel');
+        if (panel) {
+            panel.classList.add('shake');
+            setTimeout(() => panel.classList.remove('shake'), 500);
+        }
+    }
+}
+
+function unlockApp() {
+    const gate = document.getElementById('licenseGate');
+    const app = document.getElementById('mainApp');
+    gate.style.transition = 'opacity 0.7s';
+    gate.style.opacity = '0';
+    setTimeout(() => {
+        gate.classList.add('hidden');
+        app.classList.remove('hidden');
+        app.classList.add('flex');
+        initApp();
+    }, 700);
+}
+
+function checkLicense() {
+    const saved = localStorage.getItem('maxtube_license');
+    if (saved && isValidLicenseLocal(saved)) {
+        document.getElementById('licenseGate').classList.add('hidden');
+        const app = document.getElementById('mainApp');
+        app.classList.remove('hidden');
+        app.classList.add('flex');
+        initApp();
+    } else {
+        setupWhatsAppLink();
+        startCountdown();
+        initGateParticles();
+    }
+}
+
+function setupWhatsAppLink() {
+    const wa = localStorage.getItem('maxtube_whatsapp') || '9647506045491';
+    const msg = encodeURIComponent(
+        'سڵاو 🚀\nئەز دڤێم کلیلا چالاککرنێ یا MaxTube Pro MAX بکڕم.\n\n💎 پاکێج: PRO MAX / PREMIUM / LIFE-TIME\n💰 بها: (بنێرە بۆ ئەز)\n\nتکایە کلیلەکێ بۆ من بنێرە 🙏'
+    );
+    const link = `https://wa.me/${wa}?text=${msg}`;
+    const btn = document.getElementById('whatsappBuyBtn');
+    if (btn) btn.href = link;
+}
+
+function startCountdown() {
+    const timerEl = document.getElementById('countdownTimer');
+    if (!timerEl) return;
+    let total = 9 * 3600 + 59 * 60 + 59;
+    setInterval(() => {
+        total = total > 0 ? total - 1 : 9 * 3600 + 59 * 60 + 59;
+        const h = String(Math.floor(total / 3600)).padStart(2, '0');
+        const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+        const s = String(total % 60).padStart(2, '0');
+        timerEl.textContent = `${h}:${m}:${s}`;
+    }, 1000);
+}
+
+function initGateParticles() {
+    const canvas = document.getElementById('gateParticles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    });
+    const particles = Array.from({ length: 50 }, () => ({
+        x: Math.random() * width, y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2 + 0.5, a: Math.random() * 0.6 + 0.2
+    }));
+    (function animate() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > width) p.vx *= -1;
+            if (p.y < 0 || p.y > height) p.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0, 243, 255, ${p.a})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    })();
+}
+
+/* =====================================================
+   📤 TELEGRAM LOGGING
+   ===================================================== */
+async function sendLog(event, info = {}) {
+    try {
+        await fetch(`${API_BASE}/api/log`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-API-Secret': API_SECRET },
+            body: JSON.stringify({ event, info })
+        });
+    } catch(e) {}
+}
+
+/* =====================================================
+   🛡️ ADMIN DASHBOARD (LOCAL)
+   ===================================================== */
+const DEFAULT_ADMIN_PASS = 'admin2026';
+let KEY_DATABASE = JSON.parse(localStorage.getItem('maxtube_keys_db') || '[]');
+
+function getAdminPass() {
+    return localStorage.getItem('maxtube_admin_pass') || DEFAULT_ADMIN_PASS;
+}
+
+function adminLogin() {
+    const input = document.getElementById('adminPassInput').value;
+    const errEl = document.getElementById('adminLoginError');
+    if (input === getAdminPass()) {
+        const m = document.getElementById('adminLoginModal');
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+        document.getElementById('adminDashboard').classList.remove('hidden');
+        document.getElementById('adminPassInput').value = '';
+        errEl.classList.add('hidden');
+        renderAdminStats();
+        renderKeys();
+        loadAdminSettings();
+        showToast('بەخێربێی ئەدمین! 🛡️', 'user-shield');
+        sendLog('admin_login', { success: true });
+    } else {
+        errEl.textContent = '❌ پاسوۆرد نە دروستە!';
+        errEl.classList.remove('hidden');
+        document.querySelector('#adminLoginModal .glass-panel').classList.add('shake');
+        setTimeout(() => document.querySelector('#adminLoginModal .glass-panel').classList.remove('shake'), 500);
+        sendLog('admin_login_fail', { pass: '***' });
+    }
+}
+
+function closeAdminLogin() {
+    const m = document.getElementById('adminLoginModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+}
+
+function closeAdminDashboard() {
+    document.getElementById('adminDashboard').classList.add('hidden');
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        const m = document.getElementById('adminLoginModal');
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+        setTimeout(() => document.getElementById('adminPassInput').focus(), 200);
+    }
+});
+
+function checkAdminHash() {
+    if (window.location.hash === '#admin') {
+        const m = document.getElementById('adminLoginModal');
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+    }
+}
+
+function generateKeyString(type) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const part = () => Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const typeCode = { 'PRO-MAX': 'PRM', 'PREMIUM': 'VIP', 'LIMITED': 'LMT', 'MAX': 'MAX', 'TRIAL': 'TRL', 'LIFETIME': 'LFE' }[type] || 'GEN';
+    const year = new Date().getFullYear();
+    return `MAXTUBE-${typeCode}-${year}-${part()}-${part()}`;
+}
+
+function generateKeys() {
+    const type = document.getElementById('keyType').value;
+    const count = Math.min(parseInt(document.getElementById('keyCount').value) || 1, 100);
+    const days = parseInt(document.getElementById('keyDays').value) || 365;
+
+    const newKeys = [];
+    for (let i = 0; i < count; i++) {
+        let key;
+        let attempts = 0;
+        do {
+            key = generateKeyString(type);
+            attempts++;
+        } while (KEY_DATABASE.some(k => k.key === key) && attempts < 100);
+
+        const keyObj = {
+            key, type, days,
+            created: Date.now(),
+            createdDate: new Date().toLocaleString('en-GB'),
+            status: 'active',
+            usedBy: null, usedDate: null
+        };
+        KEY_DATABASE.push(keyObj);
+        newKeys.push(keyObj);
+    }
+
+    saveKeyDatabase();
+
+    const box = document.getElementById('generatedKeysBox');
+    const list = document.getElementById('generatedKeysList');
+    box.classList.remove('hidden');
+    list.innerHTML = newKeys.map(k => `
+        <div class="flex items-center justify-between bg-gray-900 p-3 rounded-lg border border-gray-800 hover:border-amber-500/40 transition">
+            <span class="text-amber-300 font-bold">${k.key}</span>
+            <button onclick="copyText('${k.key}')" class="text-gray-400 hover:text-cyan-400 transition">
+                <i class="fa-solid fa-copy"></i>
+            </button>
+        </div>
+    `).join('');
+
+    window._lastGeneratedKeys = newKeys.map(k => k.key).join('\n');
+
+    renderAdminStats();
+    renderKeys();
+    showToast(`${newKeys.length} کلیل هاتنە دروستکرن! ✅`, 'check');
+    sendLog('admin_generate_keys', { count: newKeys.length, type, days });
+}
+
+function copyAllGeneratedKeys() {
+    if (!window._lastGeneratedKeys) return;
+    copyText(window._lastGeneratedKeys, 'هەمی کلیل هاتنە کۆپیکرن!');
+}
+
+function copyText(text, msg = 'هاتە کۆپیکرن!') {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => showToast(msg, 'copy')).catch(() => fallbackCopy(text, msg));
+    } else {
+        fallbackCopy(text, msg);
+    }
+}
+
+function fallbackCopy(text, msg) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast(msg, 'copy');
+}
+
+function saveKeyDatabase() {
+    localStorage.setItem('maxtube_keys_db', JSON.stringify(KEY_DATABASE));
+}
+
+function renderAdminStats() {
+    document.getElementById('statTotal').textContent = KEY_DATABASE.length;
+    document.getElementById('statActive').textContent = KEY_DATABASE.filter(k => k.status === 'active').length;
+    document.getElementById('statUsed').textContent = KEY_DATABASE.filter(k => k.status === 'used').length;
+    document.getElementById('statRevoked').textContent = KEY_DATABASE.filter(k => k.status === 'revoked').length;
+}
+
+function renderKeys() {
+    const container = document.getElementById('keysListContainer');
+    if (!container) return;
+    const search = (document.getElementById('searchKey')?.value || '').toUpperCase();
+    let filtered = KEY_DATABASE;
+    if (search) filtered = KEY_DATABASE.filter(k => k.key.includes(search) || k.type.includes(search));
+    filtered = [...filtered].reverse();
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-gray-500 text-base">چ کلیل نینە</div>`;
+        return;
+    }
+
+    const statusColors = {
+        active: { bg: 'bg-emerald-950/50', border: 'border-emerald-500/40', text: 'text-emerald-400', label: 'چالاک', icon: 'circle-check' },
+        used: { bg: 'bg-amber-950/50', border: 'border-amber-500/40', text: 'text-amber-400', label: 'بکارهێنرن', icon: 'user-check' },
+        revoked: { bg: 'bg-red-950/50', border: 'border-red-500/40', text: 'text-red-400', label: 'ناچالاک', icon: 'ban' }
+    };
+    const typeColors = {
+        'PRO-MAX': 'text-amber-400 bg-amber-950/60',
+        'PREMIUM': 'text-cyan-400 bg-cyan-950/60',
+        'LIMITED': 'text-pink-400 bg-pink-950/60',
+        'MAX': 'text-red-400 bg-red-950/60',
+        'TRIAL': 'text-blue-400 bg-blue-950/60',
+        'LIFETIME': 'text-yellow-400 bg-yellow-950/60'
+    };
+
+    container.innerHTML = filtered.map(k => {
+        const s = statusColors[k.status] || statusColors.active;
+        const tc = typeColors[k.type] || 'text-gray-400 bg-gray-900';
+        return `
+            <div class="bg-gray-950/70 border ${s.border} rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 hover:border-opacity-100 transition">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <span class="text-xs font-black px-3 py-1.5 rounded ${tc}">${k.type}</span>
+                    <span class="font-mono text-sm text-white">${k.key}</span>
+                    <span class="text-xs ${s.text} ${s.bg} px-3 py-1.5 rounded border ${s.border} font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-${s.icon}"></i> ${s.label}
+                    </span>
+                    <span class="text-xs text-gray-500">${k.days} ڕۆژ • ${k.createdDate}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button onclick="copyText('${k.key}')" class="text-gray-400 hover:text-cyan-400 p-2.5 transition" title="کۆپی">
+                        <i class="fa-solid fa-copy"></i>
+                    </button>
+                    ${k.status === 'active' ? `<button onclick="toggleKeyStatus('${k.key}', 'revoked')" class="text-gray-400 hover:text-red-400 p-2.5 transition" title="ناچالاک"><i class="fa-solid fa-ban"></i></button>` : ''}
+                    ${k.status === 'revoked' ? `<button onclick="toggleKeyStatus('${k.key}', 'active')" class="text-gray-400 hover:text-emerald-400 p-2.5 transition" title="چالاک"><i class="fa-solid fa-check"></i></button>` : ''}
+                    <button onclick="deleteKey('${k.key}')" class="text-gray-400 hover:text-red-500 p-2.5 transition" title="ژێبرن">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleKeyStatus(key, newStatus) {
+    const k = KEY_DATABASE.find(x => x.key === key);
+    if (k) {
+        k.status = newStatus;
+        saveKeyDatabase();
+        renderAdminStats();
+        renderKeys();
+        showToast(`کلیل گوڕی بۆ: ${newStatus}`, 'refresh');
+    }
+}
+
+function deleteKey(key) {
+    if (!confirm(`ئەرێ تو دڤێی ئەڤ کلیلە ژێبەری؟\n${key}`)) return;
+    KEY_DATABASE = KEY_DATABASE.filter(x => x.key !== key);
+    saveKeyDatabase();
+    renderAdminStats();
+    renderKeys();
+    showToast('کلیل هاتە ژێبرن!', 'trash');
+}
+
+function clearAllKeys() {
+    if (!confirm('⚠️ ئەرێ تو دڤێی هەمی کلیلان ژێبەری؟')) return;
+    if (!confirm('تەمام دڵنیایی؟ ✅')) return;
+    KEY_DATABASE = [];
+    saveKeyDatabase();
+    renderAdminStats();
+    renderKeys();
+    showToast('هەمی کلیل هاتنە پاککرن!', 'trash');
+}
+
+function exportKeys() {
+    if (KEY_DATABASE.length === 0) { showToast('چ کلیل نینە', 'exclamation'); return; }
+    const data = JSON.stringify(KEY_DATABASE, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `maxtube_keys_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Export تەمام بوو!', 'download');
+}
+
+function loadAdminSettings() {
+    const wa = localStorage.getItem('maxtube_whatsapp') || '9647506045491';
+    const el = document.getElementById('newWhatsapp');
+    if (el) el.value = wa;
+}
+
+function saveAdminSettings() {
+    const newPass = document.getElementById('newAdminPass').value.trim();
+    const newWa = document.getElementById('newWhatsapp').value.trim().replace(/\D/g, '');
+    if (newPass) {
+        localStorage.setItem('maxtube_admin_pass', newPass);
+        document.getElementById('newAdminPass').value = '';
+    }
+    if (newWa) {
+        localStorage.setItem('maxtube_whatsapp', newWa);
+        setupWhatsAppLink();
+    }
+    showToast('ڕێکخستن هاتنە پاراستن! ✅', 'check');
+}
+
+/* =====================================================
+   🎯 MAIN APP LOGIC
+   ===================================================== */
+const samplePresets = {
+    'short': {
+        url: 'https://www.youtube.com/shorts/dQw4w9WgXcQ',
+        title: '⚡ ئەنجامدانا یاریەکا شاز و کورت #Shorts',
+        channel: 'Kurdish Tech Shorts', duration: '00:45', views: '840K',
+        badge: 'SHORTS HD',
+        thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800&q=80'
+    },
+    '4k': {
+        url: 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
+        title: '🎬 سروشتێ کوردستانێ ب کوالێتیا 8K Ultra HD',
+        channel: 'Kurdistan Nature 8K', duration: '12:40', views: '2.4M',
+        badge: '8K ULTRA HD',
+        thumbnail: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80'
+    },
+    'music': {
+        url: 'https://www.youtube.com/watch?v=music_sample',
+        title: '🎵 گورانییا کوردی ب دەنگێ زەلال HD Audio',
+        channel: 'Kurdish Music Official', duration: '04:15', views: '5.1M',
+        badge: '320KBPS MP3',
+        thumbnail: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80'
+    }
+};
+
+let currentVideoData = null;
+let downloadHistory = JSON.parse(localStorage.getItem('maxtube_history') || '[]');
+let appInitialized = false;
+
+function initApp() {
+    if (appInitialized) return;
+    appInitialized = true;
+    initParticles();
+    renderHistory();
+}
+
+function playUiSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.08);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.08);
+    } catch (e) {}
+}
+
+function showToast(msg, icon = 'circle-info') {
+    const t = document.getElementById('toast');
+    const m = document.getElementById('toastMessage');
+    const i = document.getElementById('toastIcon');
+    if (!t || !m || !i) return;
+    m.textContent = msg;
+    i.className = `fa-solid fa-${icon} text-brand-400 text-xl`;
+    t.classList.remove('hidden');
+    t.classList.add('flex');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => {
+        t.classList.add('hidden');
+        t.classList.remove('flex');
+    }, 3000);
+}
+
+function initParticles() {
+    const canvas = document.getElementById('bgParticles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    });
+    const particles = Array.from({ length: 50 }, () => ({
+        x: Math.random() * width, y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
+        r: Math.random() * 2 + 1, a: Math.random() * 0.5 + 0.2
+    }));
+    (function animate() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
+            if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0, 243, 255, ${p.a})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    })();
+}
+
+function toggleMobileMenu() {
+    const m = document.getElementById('mobileMenu');
+    if (m) m.classList.toggle('hidden');
+}
+
+async function pasteFromClipboard() {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+            document.getElementById('videoUrl').value = text;
+            showToast('لینک هاتە چەسپاندن!', 'check');
+        }
+    } catch (err) {
+        showToast('تکایە ب دەستی بنویسە', 'exclamation');
+    }
+}
+
+function setPresetUrl(type) {
+    const data = samplePresets[type];
+    if (data) {
+        document.getElementById('videoUrl').value = data.url;
+        processVideoData(data);
+        saveToHistory(data);
+    }
+}
+
+function resetToHome() {
+    document.getElementById('resultsDashboard').classList.add('hidden');
+    document.getElementById('videoUrl').value = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleVideoFetch(e) {
+    e.preventDefault();
+    const urlInput = document.getElementById('videoUrl').value.trim();
+    if (!urlInput) {
+        showToast('تکایە لینکەکێ دروست بنویسە', 'triangle-exclamation');
+        return;
+    }
+
+    document.getElementById('resultsDashboard').classList.add('hidden');
+    document.getElementById('loadingState').classList.remove('hidden');
+
+    const statusTexts = [
+        "پەیوەندی ب سێرڤەرێت خێرا...",
+        "شیکارکرنا دەنگ و ڤیدیۆ...",
+        "ئامادەکرنا لینکان..."
+    ];
+    let step = 0;
+    const statusInterval = setInterval(() => {
+        step++;
+        if (step < statusTexts.length) {
+            document.getElementById('loadingStatusText').innerText = statusTexts[step];
+        }
+    }, 450);
+
+    sendLog('video_fetch', { url: urlInput.substring(0, 100) });
+
+    setTimeout(() => {
+        clearInterval(statusInterval);
+        document.getElementById('loadingState').classList.add('hidden');
+        const isShort = urlInput.includes('shorts');
+        const videoData = {
+            title: isShort ? "⚡ ڤیدیۆیا کورت - YouTube Shorts HQ" : "🎬 ڤیدیۆیا تایبەتا یوتیوبێ ب 4K 60FPS",
+            channel: "کەنالێ فەرمی یێ یوتیوبێ",
+            duration: isShort ? "00:58" : "08:45",
+            views: "1.8M",
+            date: "2026",
+            badge: isShort ? "SHORTS 1080P" : "4K ULTRA HD",
+            thumbnail: isShort
+                ? "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80"
+                : "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80"
+        };
+        processVideoData(videoData);
+        saveToHistory(videoData);
+        showToast('ڤیدیۆ هاتە شیکارکرن!', 'circle-check');
+    }, 1400);
+}
+
+function processVideoData(data) {
+    currentVideoData = data;
+    document.getElementById('resThumbnail').src = data.thumbnail;
+    document.getElementById('resTitle').innerText = data.title;
+    document.getElementById('resChannel').innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${data.channel}</span>`;
+    document.getElementById('resViews').innerText = `👁️ ${data.views} بینەر`;
+    document.getElementById('resDuration').innerText = data.duration;
+    document.getElementById('resBadge').innerText = data.badge;
+
+    document.getElementById('videoQualityGrid').innerHTML = `
+        ${renderQualityCard('8K Ultra HDR (4320p)', '120 FPS • Max Bitrate', '620 MB', 'cyan', '8K')}
+        ${renderQualityCard('4K Ultra HD (2160p)', '60 FPS • Ultra Detail', '320 MB', 'brand', '4K')}
+        ${renderQualityCard('2K Quad HD (1440p)', '60 FPS • Crisp Clarity', '185 MB', 'amber', '2K')}
+        ${renderQualityCard('1080p Full HD', '60 FPS • Standard HD', '95 MB', 'emerald', 'FHD')}
+        ${renderQualityCard('720p HD', '30 FPS • Fast', '48 MB', 'blue', 'HD')}
+        ${renderQualityCard('480p SD', 'Mobile Quality', '22 MB', 'gray', 'SD')}
+    `;
+
+    document.getElementById('audioQualityGrid').innerHTML = `
+        ${renderAudioCard('FLAC Studio Lossless', '24bit 96kHz • Uncompressed', '48.5 MB')}
+        ${renderAudioCard('MP3 Ultra HQ', '320 kbps • Studio', '12.4 MB')}
+        ${renderAudioCard('MP3 Standard', '256 kbps • Crisp', '8.1 MB')}
+        ${renderAudioCard('M4A Original', 'Original Stream', '9.8 MB')}
+        ${renderAudioCard('WAV Sound', 'Lossless WAV', '42.0 MB')}
+    `;
+
+    document.getElementById('subtitleGrid').innerHTML = `
+        ${renderSubtitleCard('کوردی (Badini / Sorani)', 'SRT / VTT', '0.2 MB')}
+        ${renderSubtitleCard('English (ئینگلیزی)', 'SRT / VTT', '0.2 MB')}
+        ${renderSubtitleCard('العربية (عەرەبی)', 'SRT / VTT', '0.2 MB')}
+    `;
+
+    document.getElementById('resultsDashboard').classList.remove('hidden');
+    document.getElementById('resultsDashboard').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderQualityCard(quality, desc, size, color, tag) {
+    return `
+        <div class="glass-card p-5 rounded-2xl border border-gray-800 hover:border-${color}-500/50 transition flex flex-col justify-between space-y-4">
+            <div class="flex justify-between items-start gap-3">
+                <div>
+                    <div class="text-base font-bold text-white flex items-center gap-2 flex-wrap">
+                        <span>${quality}</span>
+                        <span class="bg-${color}-500/20 text-${color}-400 text-[11px] font-black px-2 py-1 rounded">${tag}</span>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-1.5">${desc}</div>
+                </div>
+                <span class="text-sm font-mono font-bold text-gray-300 bg-gray-800 px-3 py-1.5 rounded-md">${size}</span>
+            </div>
+            <button onclick="startDownload('${quality}', '${desc}', '${size}')" class="w-full py-3 bg-gray-800 hover:bg-brand-600 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-download"></i> داونلۆد
+            </button>
+        </div>
+    `;
+}
+
+function renderAudioCard(format, desc, size) {
+    return `
+        <div class="glass-card p-5 rounded-2xl border border-gray-800 hover:border-amber-500/50 transition flex justify-between items-center gap-4">
+            <div>
+                <div class="text-base font-bold text-white">${format}</div>
+                <div class="text-sm text-gray-400 mt-1">${desc}</div>
+            </div>
+            <div class="text-right space-y-2 shrink-0">
+                <span class="text-sm font-mono text-amber-400 block">${size}</span>
+                <button onclick="startDownload('${format}', 'Audio', '${size}')" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-sm px-5 py-2.5 rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-music"></i> داونلۆد
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderSubtitleCard(lang, format, size) {
+    return `
+        <div class="glass-card p-5 rounded-2xl border border-gray-800 hover:border-blue-500/50 transition flex justify-between items-center gap-4">
+            <div>
+                <div class="text-base font-bold text-white">${lang}</div>
+                <div class="text-sm text-gray-400 mt-1">${format}</div>
+            </div>
+            <div class="text-right space-y-2 shrink-0">
+                <span class="text-sm font-mono text-blue-400 block">${size}</span>
+                <button onclick="startDownload('Subtitle ${lang}', '${format}', '${size}')" class="bg-blue-500 hover:bg-blue-600 text-white font-extrabold text-sm px-5 py-2.5 rounded-xl transition flex items-center gap-2">
+                    <i class="fa-solid fa-closed-captioning"></i> داونلۆد
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-cyan-500', 'text-black', 'bg-brand-600', 'text-white');
+        btn.classList.add('bg-gray-800', 'text-gray-300');
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+    const map = { video: 'tabVideo', audio: 'tabAudio', gif: 'tabGif', trim: 'tabTrim', subtitles: 'tabSubtitles' };
+    const contentMap = { video: 'contentVideo', audio: 'contentAudio', gif: 'contentGif', trim: 'contentTrim', subtitles: 'contentSubtitles' };
+    const btn = document.getElementById(map[tab]);
+    const content = document.getElementById(contentMap[tab]);
+    if (btn && content) {
+        btn.classList.remove('bg-gray-800', 'text-gray-300');
+        btn.classList.add('bg-cyan-500', 'text-black');
+        content.classList.remove('hidden');
+    }
+}
+
+function toggleLivePreview() {
+    const player = document.getElementById('liveAudioPlayer');
+    player.classList.toggle('hidden');
+    showToast('لێدەرا ڕاستەوخۆ کارابوو!', 'play');
+}
+
+function toggleAudioPlayback() {
+    const btn = document.getElementById('audioPlayBtn');
+    if (btn.innerHTML.includes('play')) {
+        btn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+        showToast('دەنگ لێدەدەت...', 'volume-high');
+    } else {
+        btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
+    }
+}
+
+function updateTrimValues() {
+    const s = parseInt(document.getElementById('trimStart').value);
+    const e = parseInt(document.getElementById('trimEnd').value);
+    const totalSeconds = 210;
+    const startSec = Math.floor((s / 100) * totalSeconds);
+    const endSec = Math.floor((e / 100) * totalSeconds);
+    const fmt = (sec) => `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+    document.getElementById('trimStartVal').textContent = fmt(startSec);
+    document.getElementById('trimEndVal').textContent = fmt(endSec);
+    document.getElementById('trimSelectedDuration').textContent = fmt(Math.max(0, endSec - startSec));
+}
+
+function startDownload(title, quality, size) {
+    const modal = document.getElementById('downloadModal');
+    const bar = document.getElementById('dlProgressBar');
+    const pct = document.getElementById('dlPercent');
+    const spd = document.getElementById('dlSpeed');
+    const titleEl = document.getElementById('dlModalTitle');
+    const subEl = document.getElementById('dlModalSubtitle');
+    const successEl = document.getElementById('dlSuccessAction');
+    const anchor = document.getElementById('realDownloadAnchor');
+
+    titleEl.textContent = `پرۆسێسکرن: ${title}`;
+    subEl.textContent = `کوالێتی: ${quality} | قەبارە: ${size}`;
+    bar.style.width = '0%';
+    pct.textContent = '0%';
+    successEl.classList.add('hidden');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    sendLog('download_start', { title, quality, size });
+
+    let prog = 0;
+    const timer = setInterval(() => {
+        prog += Math.random() * 8 + 2;
+        if (prog >= 100) prog = 100;
+        bar.style.width = prog + '%';
+        pct.textContent = Math.floor(prog) + '%';
+        spd.textContent = `خێرایی: ${(Math.random()*20 + 15).toFixed(1)} MB/s`;
+        if (prog >= 100) {
+            clearInterval(timer);
+            spd.textContent = '✅ تەمام بوو';
+            anchor.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(
+                `MaxTube Pro MAX\n${title}\n${quality}\n${size}\n\nئەڤە دەمۆیە - پەڕگەیا ڕاستەقینە نینە.`
+            );
+            anchor.download = `${title.replace(/\s+/g, '_')}.txt`;
+            successEl.classList.remove('hidden');
+            showToast('داونلۆد تەمام بوو!', 'circle-check');
+        }
+    }, 200);
+}
+
+function closeDownloadModal() {
+    const m = document.getElementById('downloadModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+}
+
+function downloadThumbnail() {
+    showToast('Thumbnail هاتە داونلۆدکرن!', 'image');
+    if (currentVideoData && currentVideoData.thumbnail) {
+        window.open(currentVideoData.thumbnail, '_blank');
+    }
+}
+
+function saveToHistory(data) {
+    const item = {
+        title: data.title, channel: data.channel,
+        thumbnail: data.thumbnail, date: new Date().toLocaleString('ku')
+    };
+    downloadHistory.unshift(item);
+    downloadHistory = downloadHistory.slice(0, 8);
+    localStorage.setItem('maxtube_history', JSON.stringify(downloadHistory));
+    renderHistory();
+}
+
+function renderHistory() {
+    const grid = document.getElementById('historyGrid');
+    if (!grid) return;
+    if (downloadHistory.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-10 glass-panel rounded-2xl text-base text-gray-500">چ داونلۆد نینە. لینکەکێ بچەسپێنە!</div>`;
+        return;
+    }
+    grid.innerHTML = downloadHistory.map(h => `
+        <div class="glass-card p-4 rounded-2xl border border-gray-800 hover:border-cyan-500/40 transition space-y-3">
+            <img src="${h.thumbnail}" class="w-full h-32 object-cover rounded-xl" onerror="this.style.display='none'">
+            <div class="text-sm font-bold text-white line-clamp-2">${h.title}</div>
+            <div class="text-xs text-gray-500">${h.channel}</div>
+            <div class="text-xs text-gray-600">${h.date}</div>
+        </div>
+    `).join('');
+}
+
+function clearHistory() {
+    downloadHistory = [];
+    localStorage.removeItem('maxtube_history');
+    renderHistory();
+    showToast('مێژوو هاتە پاککرن!', 'trash');
+}
+
+function openPublishGuideModal() {
+    const m = document.getElementById('publishModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+}
+function closePublishGuideModal() {
+    const m = document.getElementById('publishModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+}
+function openPlaylistModal() {
+    const m = document.getElementById('playlistModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+}
+function closePlaylistModal() {
+    const m = document.getElementById('playlistModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+}
+function openSpeedTestModal() {
+    const m = document.getElementById('speedTestModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+}
+function closeSpeedTestModal() {
+    const m = document.getElementById('speedTestModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+}
+
+function processPlaylist() {
+    const url = document.getElementById('playlistUrl').value.trim();
+    if (!url) { showToast('لینکێ playlist بنویسە', 'triangle-exclamation'); return; }
+    showToast('پلەی لیست هاتە شیکارکرن!', 'circle-check');
+    closePlaylistModal();
+}
+
+function changeServerNode() {
+    const val = document.getElementById('serverSelect').value;
+    showToast(`سێرڤەر گوڕی بۆ: ${val.toUpperCase()} ⚡`, 'server');
+}
+
+function runSpeedTest() {
+    const meter = document.getElementById('speedMeter');
+    const status = document.getElementById('speedStatus');
+    status.innerText = "د پشکنینێ دا...";
+    let spd = 0;
+    const timer = setInterval(() => {
+        spd += Math.random() * 18 + 5;
+        meter.innerText = `${spd.toFixed(1)} MB/s`;
+        if (spd > 95) {
+            clearInterval(timer);
+            meter.innerText = "124.8 MB/s";
+            status.innerText = "🚀 گونجاو بۆ 8K ULTRA HD!";
+        }
+    }, 100);
+}
+
+/* =====================================================
+   🚀 INIT
+   ===================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('licenseKeyInput');
+    if (inp) inp.addEventListener('keypress', e => { if (e.key === 'Enter') activateLicense(); });
+    const adminInp = document.getElementById('adminPassInput');
+    if (adminInp) adminInp.addEventListener('keypress', e => { if (e.key === 'Enter') adminLogin(); });
+
+    checkLicense();
+    checkAdminHash();
+    window.addEventListener('hashchange', checkAdminHash);
+
+    // Log page load
+    setTimeout(() => sendLog('page_load', { url: location.href, ref: document.referrer }), 500);
+});
+
+// Global click logger
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('button, a');
+    if (btn && appInitialized) {
+        const label = (btn.innerText || '').trim().substring(0, 40);
+        if (label && !btn.onclick) return;
+    }
+}, true);
+</script>
+</body>
+</html>
